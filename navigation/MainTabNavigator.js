@@ -9,7 +9,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 
 const CalculateStack = createStackNavigator({
   Calculate: CalculateScreen,
-  Settings: SettingsScreen,
+  Results: SettingsScreen,
 });
 
 const SettingsStack = createStackNavigator({
