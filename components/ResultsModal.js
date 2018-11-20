@@ -1,10 +1,12 @@
 import React from 'react';
-import { Text, View, Modal, TouchableHighlight, StyleSheet} from 'react-native';
+import { Text, View, StyleSheet, Dimensions} from 'react-native';
 import {futureValue, payment} from '../utils/pmtCalc';
-
+import { Button } from 'native-base';
 import { LineChart, Grid, YAxis, XAxis } from 'react-native-svg-charts'
+import Colors from '../constants/Colors';
 
 var data =[]
+const {width} = Dimensions.get('window')
 
 export class ResultsModal extends React.Component {
     constructor(props) {
@@ -16,9 +18,7 @@ export class ResultsModal extends React.Component {
         }        
     }
 
-    componentDidMount() {
-        console.log('calcuateioan');
-        
+    componentDidMount() {        
         this.setState({calculating: true})
         this.calculate();
     }
@@ -57,49 +57,62 @@ export class ResultsModal extends React.Component {
         const contentInset = { top: 20, bottom: 20 };
         const annualRates = [0.04, 0.06, 0.08, 0.1];
         return (
-            <View style={styles.container}>
+            <View style={styles.container} collapsable={false}>
                 {
                     this.state.calculating?
                     (<Text>calculating...</Text>):
                     (
-                        <View style={{marginTop: 22}}>
+                        <View>
                             <View>
-                                <Text style={styles.header}>Retirement Income:</Text>
-                                <Text style={styles.value}>${this.state.retirementIncome}</Text>
-                                <Text style={styles.header}>Monthly Savings:</Text>
-                                <View style={styles.table}>
-                                    {
-                                        this.state.monthlySavings.map((save, index) =>
-                                            <View style={styles.tableColumn} key={index}>
-                                                <View style={styles.tableItem}>
-                                                    <Text style={styles.tableRate}>{annualRates[index]}</Text>
-                                                </View>
-                                                <View style={styles.tableItem}>
-                                                    <Text style={styles.tableValue}>${save}</Text>
-                                                </View>
-                                            </View> 
-                                        )
-                                    }
+                                <View style={{height: 250,width: width, backgroundColor:Colors.primThree}}>
+                                    <Text style={{color:'white', alignSelf:'center', paddingTop: '2%'}}>Titel</Text>
+                                    <View style={{height: '95%', width: '95%', flexDirection: 'row', padding:'4%', paddingBottom: '4%'}}>
+                                        <YAxis
+                                                data={ data }
+                                                contentInset={ contentInset }
+                                                svg={{
+                                                    fill: 'white',
+                                                    fontSize: 10,
+                                                }}
+                                                numberOfTicks={ 4 }
+                                                formatLabel={ value => `${value}` }
+                                            />
+                                            <LineChart
+                                                style={{ flex: 1, marginLeft: 16 }}
+                                                data={ data }
+                                                svg={{ stroke: 'white', strokeWidth: 4 }}
+                                                contentInset={{ top: 20, bottom: 20 }}
+                                            >
+                                                <Grid/>
+                                            </LineChart>
+                                    </View>
                                 </View>
-                                <View style={{ height: 200, width: 300, flexDirection: 'row', marginLeft: 25 }}>
-                                    <YAxis
-                                        data={ data }
-                                        contentInset={ contentInset }
-                                        svg={{
-                                            fill: 'grey',
-                                            fontSize: 10,
-                                        }}
-                                        numberOfTicks={ 4 }
-                                        formatLabel={ value => `${value}` }
-                                    />
-                                    <LineChart
-                                        style={{ flex: 1, marginLeft: 16 }}
-                                        data={ data }
-                                        svg={{ stroke: '#2f95dc', strokeWidth: 3 }}
-                                        contentInset={{ top: 20, bottom: 20 }}
-                                    >
-                                        <Grid/>
-                                    </LineChart>
+                                <View style={{padding:'3%'}}>
+                                    <Text style={styles.header}>Retirement Income:</Text>
+                                    <Text style={styles.value}>${this.state.retirementIncome}</Text>
+                                    <Text style={styles.header}>Monthly Savings:</Text>
+                                    <View style={styles.table}>
+                                        {
+                                            this.state.monthlySavings.map((save, index) =>
+                                                <View style={styles.tableColumn} key={index}>
+                                                    <View style={styles.tableItem}>
+                                                        <Text style={styles.tableRate}>{annualRates[index]}</Text>
+                                                    </View>
+                                                    <View style={styles.tableItem}>
+                                                        <Text style={styles.tableValue}>${save}</Text>
+                                                    </View>
+                                                </View> 
+                                            )
+                                        }
+                                    </View>
+                                </View>
+                                <View style={styles.buttonContainer}>
+                                        <Button style={styles.button} onPress={() => this.props._toggleSubview(false)}>
+                                        <Text>Done</Text>
+                                        </Button>
+                                        <Button style={styles.button} onPress={() => this.props._share()}>
+                                        <Text>Share</Text>
+                                        </Button>
                                 </View>
                             </View>
                         </View>
@@ -112,7 +125,7 @@ export class ResultsModal extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
+        // padding: 20,
     },
     header: {
         fontSize: 18,
@@ -131,7 +144,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         minHeight: 70,
-        padding: 20,
+        // padding: 20,
     },
     tableColumn: {
         flex: 1,
@@ -155,4 +168,16 @@ const styles = StyleSheet.create({
         // color: 'green',
         fontWeight: '700'
     },
+    buttonContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignSelf: 'center',
+        paddingTop: '60%'
+      },
+    button: {
+        margin: 10,
+        width: 120,
+        height: 70,
+        justifyContent: "center"
+      },
 })

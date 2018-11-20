@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Modal, TouchableHighlight, Animated, Dimensions, Share, Keyboard} from 'react-native';
+import { StyleSheet, View, Modal, Alert, Animated, Dimensions, Share, Keyboard} from 'react-native';
 import { Form, Item, Input, Label, Container, Text, Button, Picker, Icon } from 'native-base';
 import { ResultsModal } from '../components/ResultsModal';
 import Colors from '../constants/Colors';
@@ -83,117 +83,136 @@ export default class CalcForm extends Component {
     isHidden = !isHidden;
   }
 
-  _share = async () => {
-    let result = await takeSnapshotAsync(this._container, {
-      format: 'jpg',
-      result: 'file',
-    });
-
-    Share.share({
-      message: 'Your Monthly Savings Calculations',
-      url: result,
-      title: 'Financial Calculator'
-    }, {
-      // Android only:
-      dialogTitle: 'reactive-solutions',
-      // iOS only:
-      // excludedActivityTypes: [
-      //   'com.apple.UIKit.activity.PostToTwitter'
-      // ]
-    })
+  _share = async () => {    
+    try {
+      let result = await takeSnapshotAsync(this._container, {
+        format: 'jpg',
+        result: 'file',
+      });
+  
+      Share.share({
+        message: 'Your Monthly Savings Calculations',
+        url: result,
+        title: 'Financial Calculator'
+      }, {
+        // Android only:
+        dialogTitle: 'reactive-solutions',
+        // iOS only:
+        // excludedActivityTypes: [
+        //   'com.apple.UIKit.activity.PostToTwitter'
+        // ]
+      })
+    }  
+    catch(err) {
+      Alert.alert('Error', 'Failed to share.')
+      console.log(err);
+    }  
   }
 
   render() {   
     return (
-      <Container>
-        <View style={{marginTop: '30%', marginRight:10}}>
-          <Form>
-            <Item error={this.state.invalidAge} fixedLabel>
-              <Label>Age</Label>
-              <Input onChangeText={(val) => this.handleValueChange('age', val)} placeholder="Enter current age" returnKeyLabel='Done' returnKeyType='done'/>
-              {
-                this.state.invalidAge ?
-                (<Icon name='close-circle' />):
-                (null)
-              }
-            </Item>
-            <Item error={this.state.invalidIncome} fixedLabel>
-              <Label>Income</Label>
-              <Input onChangeText={(val) => this.handleValueChange('income', val)} placeholder="Enter annual income" returnKeyLabel='Done' returnKeyType='done'/>
-              {
-                this.state.invalidIncome ?
-                (<Icon name='close-circle' />):
-                (null)
-              }
-            </Item>
-            {/* <Item fixedLabel last>
-            <Label>Savings Plan</Label>
-              <Picker
-                  mode="dropdown"
-                  iosIcon={<Icon name="ios-arrow-down-outline" />}
-                  placeholder="Select Acceleration"
-                  placeholderIconColor="#007aff"
-                  style={{ width: undefined }}
-                  selectedValue={this.state.selected}
-                  onValueChange={this.onValueChange.bind(this)}
-                >
-                  <Picker.Item label="RRSP" value="key0" />
-                  <Picker.Item label="- 3.8 (Mars)" value="key1" />
-                </Picker>
-            </Item> */}
-          </Form>
-        </View>
-        <View style={{margin:20, alignSelf:"center"}}>
-          {
-            (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" ))?
-            (
-              <Button style={styles.disabledButton} disabled onPress={() => this._toggleSubview(true)}>
-                <Text>Calculate</Text>
-              </Button>
-            ):
-            (
-              <Button style={styles.activeButton} onPress={() => this._toggleSubview(true)}>
-                <Text>Calculate</Text>
-              </Button>
-            )
-          }
-        </View>
+      <Container collapsable={false}>
         {
           this.state.modalVisible ?
           (
-            <Animated.View ref="viewShot"
-              style={[
-                styles.subView,
-                {transform: [{translateY: this.state.bounceValue}]}
-              ]}
-              ref={view => {
-                this._container = view;
-              }}
-            >
-              <ResultsModal 
-                age={this.state.age}
-                income={this.state.income}
-                visible={true}
-                setModalVisible={this.setModalVisible.bind(this)}
-              />
-              <View style={styles.buttonContainer}>
-                <Button style={styles.button} onPress={() => this._toggleSubview(false)}>
-                  <Text>Done</Text>
-                </Button>
-                <Button style={styles.button} onPress={() => this._share()}>
-                  <Text>Share</Text>
-                </Button>
-              </View>
-            </Animated.View>
+            <Modal 
+              visible 
+              animationType="none" 
+              onRequestClose={(msg) => null}
+              collapsable={false}
+              >
+              {/* <Animated.View ref="viewShot"
+                style={[
+                  styles.subView,
+                  {transform: [{translateY: this.state.bounceValue}]}
+                ]}
+                ref={view => {
+                  this._container = view;
+                }}
+              >
+                 */}
+                 <View style={styles.subView} collapsable={false}
+                  ref={view => {
+                    this._container = view;
+                  }}
+                  // ref="viewShot"
+                 >
+                 <ResultsModal 
+                    age={this.state.age}
+                    income={this.state.income}
+                    visible={true}
+                    setModalVisible={this.setModalVisible.bind(this)}
+                    _toggleSubview={this._toggleSubview.bind(this)}
+                    _share={this._share.bind(this)}
+                  />
+                 </View>
+                 <View style={styles.buttonContainer}>
+                                        <Button style={styles.button} onPress={() => this._toggleSubview(false)}>
+                                        <Text>Done</Text>
+                                        </Button>
+                                        <Button style={styles.button} onPress={() => this._share()}>
+                                        <Text>Share</Text>
+                                        </Button>
+                                </View>
+
+              {/* </Animated.View> */}
+            </Modal>
           ):
           (
-            <Animated.View
-              style={[
-                styles.subView,
-                {transform: [{translateY: this.state.bounceValue}]}
-              ]}
-            >
-            </Animated.View>
+            <View>
+              <View style={{marginTop: '30%', marginRight:10}}>
+                <Form>
+                  <Item error={this.state.invalidAge} fixedLabel>
+                    <Label>Age</Label>
+                    <Input onChangeText={(val) => this.handleValueChange('age', val)} placeholder="Enter current age" returnKeyLabel='Done' returnKeyType='done'/>
+                    {
+                      this.state.invalidAge ?
+                      (<Icon name='close-circle' />):
+                      (null)
+                    }
+                  </Item>
+                  <Item error={this.state.invalidIncome} fixedLabel>
+                    <Label>Income</Label>
+                    <Input onChangeText={(val) => this.handleValueChange('income', val)} placeholder="Enter annual income" returnKeyLabel='Done' returnKeyType='done'/>
+                    {
+                      this.state.invalidIncome ?
+                      (<Icon name='close-circle' />):
+                      (null)
+                    }
+                  </Item>
+                  {/* <Item fixedLabel last>
+                  <Label>Savings Plan</Label>
+                    <Picker
+                        mode="dropdown"
+                        iosIcon={<Icon name="ios-arrow-down-outline" />}
+                        placeholder="Select Acceleration"
+                        placeholderIconColor="#007aff"
+                        style={{ width: undefined }}
+                        selectedValue={this.state.selected}
+                        onValueChange={this.onValueChange.bind(this)}
+                      >
+                        <Picker.Item label="RRSP" value="key0" />
+                        <Picker.Item label="- 3.8 (Mars)" value="key1" />
+                      </Picker>
+                  </Item> */}
+                </Form>
+              </View>
+              <View style={{margin:20, alignSelf:"center"}}>
+                {
+                  (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" ))?
+                  (
+                    <Button style={styles.disabledButton} disabled onPress={() => this._toggleSubview(true)}>
+                      <Text>Calculate</Text>
+                    </Button>
+                  ):
+                  (
+                    <Button style={styles.activeButton} onPress={() => this._toggleSubview(true)}>
+                      <Text>Calculate</Text>
+                    </Button>
+                  )
+                }
+              </View>
+            </View>
           )
         }
 
@@ -232,18 +251,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.fgLight
   },
   subView: {
-    flex: 1,
-    flexDirection: 'column',
-    position: "absolute",
-    bottom: -10,
-    left: 0,
-    right: 0,
-    backgroundColor: 'lightgrey',
-    borderRadius:50,
-    borderWidth: 1,
-    borderColor: 'grey',
-    height: (height - height/7),
-    // justifyContent: 'center',
+    // flex: 1,
+    // flexDirection: 'column',
+    // position: "absolute",
+    // bottom: -10,
+    // left: 0,
+    // right: 0,
+    // backgroundColor: 'lightgrey',
+    // borderRadius:50,
+    // borderWidth: 1,
+    // borderColor: 'grey',
+    // height: height,
+    // margin:'5%',
     alignItems: 'flex-start'
   },
   buttonContainer: {
