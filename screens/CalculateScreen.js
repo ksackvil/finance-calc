@@ -1,8 +1,14 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Modal, TouchableHighlight} from 'react-native';
+import { StyleSheet, View, Modal, TouchableHighlight, Animated, Dimensions, Share, Keyboard} from 'react-native';
 import { Form, Item, Input, Label, Container, Text, Button, Picker, Icon } from 'native-base';
 import { ResultsModal } from '../components/ResultsModal';
 import Colors from '../constants/Colors';
+
+import { Constants, takeSnapshotAsync } from 'expo';
+
+
+var isHidden = true;
+const {height} = Dimensions.get('window')
 
 export default class CalcForm extends Component {
   static navigationOptions = {
@@ -27,6 +33,8 @@ export default class CalcForm extends Component {
       income: null,
       invalidIncome: false,
       invalidForm: false,
+
+      bounceValue: new Animated.Value((height - 100)),
     }
   }
 
@@ -48,14 +56,63 @@ export default class CalcForm extends Component {
     }    
   }
 
-  render() {    
+  _toggleSubview(visible) {   
+    Keyboard.dismiss()
+    
+    this.setState({
+      modalVisible: visible,
+    });
+
+    var toValue = (height - height/7);
+
+    if(isHidden) {
+      toValue = height/20;
+    }
+
+    //This will animate the transalteY of the subview between 0 & 100 depending on its current state
+    //100 comes from the style below, which is the height of the subview.
+    Animated.spring(
+      this.state.bounceValue,
+      {
+        toValue: toValue,
+        velocity: 3,
+        tension: 2,
+        friction: 8,
+      }
+    ).start();
+
+    isHidden = !isHidden;
+  }
+
+  _share = async () => {
+    let result = await takeSnapshotAsync(this._container, {
+      format: 'jpg',
+      result: 'file',
+    });
+
+    Share.share({
+      message: 'Your Monthly Savings Calculations',
+      url: result,
+      title: 'Financial Calculator'
+    }, {
+      // Android only:
+      dialogTitle: 'reactive-solutions',
+      // iOS only:
+      // excludedActivityTypes: [
+      //   'com.apple.UIKit.activity.PostToTwitter'
+      // ]
+    })
+  }
+
+  render() {   
+    console.log(height); 
     return (
       <Container>
         <View style={{marginTop: '30%', marginRight:10}}>
           <Form >
             <Item error={this.state.invalidAge} fixedLabel>
               <Label>Age</Label>
-              <Input onChangeText={(val) => this.handleValueChange('age', val)} placeholder="Enter current age"/>
+              <Input onChangeText={(val) => this.handleValueChange('age', val)} placeholder="Enter current age" returnKeyLabel='Done' returnKeyType='done'/>
               {
                 this.state.invalidAge ?
                 (<Icon name='close-circle' />):
@@ -64,7 +121,7 @@ export default class CalcForm extends Component {
             </Item>
             <Item error={this.state.invalidIncome} fixedLabel>
               <Label>Income</Label>
-              <Input onChangeText={(val) => this.handleValueChange('income', val)} placeholder="Enter annual income"/>
+              <Input onChangeText={(val) => this.handleValueChange('income', val)} placeholder="Enter annual income" returnKeyLabel='Done' returnKeyType='done'/>
               {
                 this.state.invalidIncome ?
                 (<Icon name='close-circle' />):
@@ -92,12 +149,20 @@ export default class CalcForm extends Component {
           {
             (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" ))?
             (
+<<<<<<< HEAD
               <Button style={styles.disabledButton} disabled onPress={() => this.setModalVisible(true)}>
+=======
+              <Button disabled onPress={() => this._toggleSubview(true)}>
+>>>>>>> d13a46dd1b5e4d640588f543ee7ee6f5314318bb
                 <Text>Calculate</Text>
               </Button>
             ):
             (
+<<<<<<< HEAD
               <Button style={styles.activeButton} onPress={() => this.setModalVisible(true)}>
+=======
+              <Button onPress={() => this._toggleSubview(true)}>
+>>>>>>> d13a46dd1b5e4d640588f543ee7ee6f5314318bb
                 <Text>Calculate</Text>
               </Button>
             )
@@ -106,14 +171,38 @@ export default class CalcForm extends Component {
         {
           this.state.modalVisible ?
           (
-            <ResultsModal 
-              age={this.state.age}
-              income={this.state.income}
-              visible={true}
-              setModalVisible={this.setModalVisible.bind(this)}
-            />
+            <Animated.View ref="viewShot"
+              style={[
+                styles.subView,
+                {transform: [{translateY: this.state.bounceValue}]}
+              ]}
+              ref={view => {
+                this._container = view;
+              }}>
+            >
+              <ResultsModal 
+                age={this.state.age}
+                income={this.state.income}
+                visible={true}
+                setModalVisible={this.setModalVisible.bind(this)}
+              />
+              <View style={styles.buttonContainer}>
+                <Button style={styles.button} onPress={() => this._toggleSubview(false)}>
+                  <Text>Done</Text>
+                </Button>
+                <Button style={styles.button} onPress={() => this._share()}>
+                  <Text>Share</Text>
+                </Button>
+              </View>
+            </Animated.View>
           ):
-          (null)
+            <Animated.View
+              style={[
+                styles.subView,
+                {transform: [{translateY: this.state.bounceValue}]}
+              ]}
+            >
+            </Animated.View>
         }
 
         {/* <View style={{margin: 12, alignSelf: "center"}}>
@@ -144,10 +233,40 @@ export default class CalcForm extends Component {
 }
 
 const styles = StyleSheet.create({
+<<<<<<< HEAD
   activeButton: {
     backgroundColor: Colors.primThree
   },
   disabledButton: {
     backgroundColor: Colors.fgLight
   }
+=======
+  subView: {
+    flex: 1,
+    flexDirection: 'column',
+    position: "absolute",
+    bottom: -10,
+    left: 0,
+    right: 0,
+    backgroundColor: 'lightgrey',
+    borderRadius:50,
+    borderWidth: 1,
+    borderColor: 'grey',
+    height: (height - height/7),
+    // justifyContent: 'center',
+    alignItems: 'flex-start'
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    bottom: 150,
+  },
+  button: {
+    margin: 10,
+    width: 120,
+    height: 70,
+    justifyContent: "center"
+  },
+>>>>>>> d13a46dd1b5e4d640588f543ee7ee6f5314318bb
 })
