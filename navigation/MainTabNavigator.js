@@ -5,6 +5,7 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 import TabBarIcon from '../components/TabBarIcon';
 import CalculateScreen from '../screens/CalculateScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import Colors from '../constants/Colors'
 
 
 const CalculateStack = createStackNavigator({
@@ -17,7 +18,16 @@ const SettingsStack = createStackNavigator({
 });
 
 CalculateStack.navigationOptions = {
+
   tabBarLabel: 'Calculate',
+  tabBarOptions: {
+    activeTintColor: Colors.primThree,
+    inactiveTintColor: Colors.fgLight,
+    labelStyle: {
+      fontSize: 12,
+      fontWeight:'bold'
+    },
+  },
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
@@ -28,6 +38,14 @@ CalculateStack.navigationOptions = {
 
 SettingsStack.navigationOptions = {
   tabBarLabel: 'Settings',
+  tabBarOptions: {
+    activeTintColor: Colors.primThree,
+    inactiveTintColor: Colors.fgLight,
+    labelStyle: {
+      fontSize: 12,
+      fontWeight:'bold'
+    },
+  },
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}

@@ -2,11 +2,19 @@ import React, { Component } from 'react';
 import { StyleSheet, View, Modal, TouchableHighlight} from 'react-native';
 import { Form, Item, Input, Label, Container, Text, Button, Picker, Icon } from 'native-base';
 import { ResultsModal } from '../components/ResultsModal';
+import Colors from '../constants/Colors';
 
 export default class CalcForm extends Component {
   static navigationOptions = {
     title: 'Monthly Savings',
-  };
+    headerTitleStyle:{
+      color:'white',  
+      marginLeft:'29.%'
+    },
+    headerStyle: {
+      backgroundColor: Colors.fgDark,
+    },
+    };
 
   constructor(props) {
     super(props) 
@@ -84,12 +92,12 @@ export default class CalcForm extends Component {
           {
             (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" ))?
             (
-              <Button disabled onPress={() => this.setModalVisible(true)}>
+              <Button style={styles.disabledButton} disabled onPress={() => this.setModalVisible(true)}>
                 <Text>Calculate</Text>
               </Button>
             ):
             (
-              <Button onPress={() => this.setModalVisible(true)}>
+              <Button style={styles.activeButton} onPress={() => this.setModalVisible(true)}>
                 <Text>Calculate</Text>
               </Button>
             )
@@ -135,4 +143,11 @@ export default class CalcForm extends Component {
   }
 }
 
-const styles = StyleSheet.create
+const styles = StyleSheet.create({
+  activeButton: {
+    backgroundColor: Colors.primThree
+  },
+  disabledButton: {
+    backgroundColor: Colors.fgLight
+  }
+})
