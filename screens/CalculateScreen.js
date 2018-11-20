@@ -33,9 +33,9 @@ export default class CalcForm extends Component {
       income: null,
       invalidIncome: false,
       invalidForm: false,
-
-      bounceValue: new Animated.Value((height - 100)),
+      bounceValue: new Animated.Value((height - 100)),     
     }
+    console.log(height);
   }
 
   setModalVisible(visible) {
@@ -105,11 +105,10 @@ export default class CalcForm extends Component {
   }
 
   render() {   
-    console.log(height); 
     return (
       <Container>
         <View style={{marginTop: '30%', marginRight:10}}>
-          <Form >
+          <Form>
             <Item error={this.state.invalidAge} fixedLabel>
               <Label>Age</Label>
               <Input onChangeText={(val) => this.handleValueChange('age', val)} placeholder="Enter current age" returnKeyLabel='Done' returnKeyType='done'/>
@@ -149,20 +148,12 @@ export default class CalcForm extends Component {
           {
             (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" ))?
             (
-<<<<<<< HEAD
               <Button style={styles.disabledButton} disabled onPress={() => this.setModalVisible(true)}>
-=======
-              <Button disabled onPress={() => this._toggleSubview(true)}>
->>>>>>> d13a46dd1b5e4d640588f543ee7ee6f5314318bb
                 <Text>Calculate</Text>
               </Button>
             ):
             (
-<<<<<<< HEAD
               <Button style={styles.activeButton} onPress={() => this.setModalVisible(true)}>
-=======
-              <Button onPress={() => this._toggleSubview(true)}>
->>>>>>> d13a46dd1b5e4d640588f543ee7ee6f5314318bb
                 <Text>Calculate</Text>
               </Button>
             )
@@ -178,7 +169,7 @@ export default class CalcForm extends Component {
               ]}
               ref={view => {
                 this._container = view;
-              }}>
+              }}
             >
               <ResultsModal 
                 age={this.state.age}
@@ -196,6 +187,7 @@ export default class CalcForm extends Component {
               </View>
             </Animated.View>
           ):
+          (
             <Animated.View
               style={[
                 styles.subView,
@@ -203,6 +195,7 @@ export default class CalcForm extends Component {
               ]}
             >
             </Animated.View>
+          )
         }
 
         {/* <View style={{margin: 12, alignSelf: "center"}}>
@@ -233,14 +226,12 @@ export default class CalcForm extends Component {
 }
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
   activeButton: {
     backgroundColor: Colors.primThree
   },
   disabledButton: {
     backgroundColor: Colors.fgLight
-  }
-=======
+  },
   subView: {
     flex: 1,
     flexDirection: 'column',
@@ -268,5 +259,4 @@ const styles = StyleSheet.create({
     height: 70,
     justifyContent: "center"
   },
->>>>>>> d13a46dd1b5e4d640588f543ee7ee6f5314318bb
 })

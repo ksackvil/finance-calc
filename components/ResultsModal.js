@@ -17,12 +17,14 @@ export class ResultsModal extends React.Component {
     }
 
     componentDidMount() {
+        console.log('calcuateioan');
+        
         this.setState({calculating: true})
         this.calculate();
     }
 
     calculate(){ 
-        // USER INPUT PROPS
+        // // USER INPUT PROPS
         var age = this.props.age;
         var annualIncome = this.props.income;
 
