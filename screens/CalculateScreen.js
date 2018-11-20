@@ -35,7 +35,6 @@ export default class CalcForm extends Component {
       invalidForm: false,
       bounceValue: new Animated.Value((height - 100)),     
     }
-    console.log(height);
   }
 
   setModalVisible(visible) {
@@ -148,12 +147,12 @@ export default class CalcForm extends Component {
           {
             (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" ))?
             (
-              <Button style={styles.disabledButton} disabled onPress={() => this.setModalVisible(true)}>
+              <Button style={styles.disabledButton} disabled onPress={() => this._toggleSubview(true)}>
                 <Text>Calculate</Text>
               </Button>
             ):
             (
-              <Button style={styles.activeButton} onPress={() => this.setModalVisible(true)}>
+              <Button style={styles.activeButton} onPress={() => this._toggleSubview(true)}>
                 <Text>Calculate</Text>
               </Button>
             )
