@@ -4,7 +4,7 @@ import { Form, Item, Input, Label, Container, Text, Button, Picker, Icon } from 
 import { ResultsModal } from '../components/ResultsModal';
 import Colors from '../constants/Colors';
 
-import { Constants, takeSnapshotAsync } from 'expo';
+import { takeSnapshotAsync } from 'expo';
 
 
 var isHidden = true;
@@ -15,7 +15,7 @@ export default class CalcForm extends Component {
     title: 'Monthly Savings',
     headerTitleStyle:{
       color:'white',  
-      marginLeft:'29.%'
+      alignSelf:'center'
     },
     headerStyle: {
       backgroundColor: Colors.fgDark,
@@ -35,19 +35,22 @@ export default class CalcForm extends Component {
       invalidForm: false,
       bounceValue: new Animated.Value((height - 100)),     
     }
-  }
+  } 
 
   setModalVisible(visible) {
     this.setState({modalVisible: visible});
   }
 
   handleValueChange(key, value) {
-    if (isNaN(value)){
+    if (isNaN(value) || value==0){
       if(key==='age'){this.setState({age: value, invalidAge: true})}
       else if(key==='income'){this.setState({income: value, invalidIncome: true})}
     }
     else if(key==='age' && !(value % 1 === 0)) {
       if(key==='age'){this.setState({age: value, invalidAge: true})}
+    }
+    else if(key=='age' && value>=65){
+      this.setState({age: value, invalidAge: true})
     }
     else {
       if(key==='age'){this.setState({age: value, invalidAge: false, invalidIncome: false})}
@@ -62,25 +65,25 @@ export default class CalcForm extends Component {
       modalVisible: visible,
     });
 
-    var toValue = (height - height/7);
+    // var toValue = (height - height/7);
 
-    if(isHidden) {
-      toValue = height/20;
-    }
+    // if(isHidden) {
+    //   toValue = height/20;
+    // }
 
-    //This will animate the transalteY of the subview between 0 & 100 depending on its current state
-    //100 comes from the style below, which is the height of the subview.
-    Animated.spring(
-      this.state.bounceValue,
-      {
-        toValue: toValue,
-        velocity: 3,
-        tension: 2,
-        friction: 8,
-      }
-    ).start();
+    // //This will animate the transalteY of the subview between 0 & 100 depending on its current state
+    // //100 comes from the style below, which is the height of the subview.
+    // Animated.spring(
+    //   this.state.bounceValue,
+    //   {
+    //     toValue: toValue,
+    //     velocity: 3,
+    //     tension: 2,
+    //     friction: 8,
+    //   }
+    // ).start();
 
-    isHidden = !isHidden;
+    // isHidden = !isHidden;
   }
 
   _share = async () => {    
@@ -109,7 +112,7 @@ export default class CalcForm extends Component {
     }  
   }
 
-  render() {   
+  render() {       
     return (
       <Container collapsable={false}>
         {
@@ -117,9 +120,10 @@ export default class CalcForm extends Component {
           (
             <Modal 
               visible 
-              animationType="none" 
+              animationType="slide" 
               onRequestClose={(msg) => null}
               collapsable={false}
+              style={{height:height}}
               >
               {/* <Animated.View ref="viewShot"
                 style={[
@@ -146,14 +150,14 @@ export default class CalcForm extends Component {
                     _share={this._share.bind(this)}
                   />
                  </View>
-                 <View style={styles.buttonContainer}>
+                 {/* <View style={styles.buttonContainer}>
                                         <Button style={styles.button} onPress={() => this._toggleSubview(false)}>
                                         <Text>Done</Text>
                                         </Button>
                                         <Button style={styles.button} onPress={() => this._share()}>
                                         <Text>Share</Text>
                                         </Button>
-                                </View>
+                                </View> */}
 
               {/* </Animated.View> */}
             </Modal>
@@ -164,7 +168,7 @@ export default class CalcForm extends Component {
                 <Form>
                   <Item error={this.state.invalidAge} fixedLabel>
                     <Label>Age</Label>
-                    <Input onChangeText={(val) => this.handleValueChange('age', val)} placeholder="Enter current age" returnKeyLabel='Done' returnKeyType='done'/>
+                    <Input onChangeText={(val) => this.handleValueChange('age', val)} placeholder="Enter current age" returnKeyLabel='Done' returnKeyType='done' value={this.state.age} keyboardType="numeric"/>
                     {
                       this.state.invalidAge ?
                       (<Icon name='close-circle' />):
@@ -173,7 +177,7 @@ export default class CalcForm extends Component {
                   </Item>
                   <Item error={this.state.invalidIncome} fixedLabel>
                     <Label>Income</Label>
-                    <Input onChangeText={(val) => this.handleValueChange('income', val)} placeholder="Enter annual income" returnKeyLabel='Done' returnKeyType='done'/>
+                    <Input onChangeText={(val) => this.handleValueChange('income', val)} placeholder="Enter annual income" returnKeyLabel='Done' returnKeyType='done' value={this.state.income} keyboardType="numeric"/>
                     {
                       this.state.invalidIncome ?
                       (<Icon name='close-circle' />):
@@ -199,7 +203,7 @@ export default class CalcForm extends Component {
               </View>
               <View style={{margin:20, alignSelf:"center"}}>
                 {
-                  (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" ))?
+                  (this.state.invalidAge || this.state.invalidIncome) || ((this.state.age===null || this.state.age==="") || (this.state.income===null || this.state.income==="" )) ?
                   (
                     <Button style={styles.disabledButton} disabled onPress={() => this._toggleSubview(true)}>
                       <Text>Calculate</Text>
@@ -251,25 +255,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.fgLight
   },
   subView: {
-    // flex: 1,
-    // flexDirection: 'column',
-    // position: "absolute",
-    // bottom: -10,
-    // left: 0,
-    // right: 0,
-    // backgroundColor: 'lightgrey',
-    // borderRadius:50,
-    // borderWidth: 1,
-    // borderColor: 'grey',
-    // height: height,
-    // margin:'5%',
-    alignItems: 'flex-start'
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignSelf: 'center',
-    bottom: 150,
+    flex:1,
+    // height:'100%',
+    alignItems: 'flex-start',
   },
   button: {
     margin: 10,
