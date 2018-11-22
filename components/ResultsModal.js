@@ -105,7 +105,7 @@ export class ResultsModal extends React.Component {
                                     <View style={{flexDirection:'row'}}>
                                         <View>
                                             <Text style={styles.header}>Retirement Income</Text>
-                                            <Text style={styles.value}>${this.state.retirementIncome}</Text>
+                                            <Text style={styles.value}>{numeral(this.state.retirementIncome).format('$0,0.00')}</Text>
                                         </View>
                                         
                                         <DynamicPieChart/>
@@ -121,7 +121,7 @@ export class ResultsModal extends React.Component {
                                                             <Text style={styles.tableRate}>{`${annualRates[index]*10}%`}</Text>
                                                         </View>
                                                         <View style={styles.tableItem}>
-                                                            <Text style={styles.tableValue}>${save}</Text>
+                                                            <Text style={styles.tableValue}>{numeral(save).format('$0,0.00')}</Text>
                                                         </View>
                                                     </View> 
                                                 )
