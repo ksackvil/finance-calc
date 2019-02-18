@@ -109,6 +109,22 @@ export default class SettingsScreen extends React.Component {
     }
   }
 
+  _handleEdit() {
+    Alert.alert(
+      'Edit Constants',
+      'Add the following...',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'Save', onPress: () => {}},
+      ],
+      {cancelable: false},
+    );
+  };
+
   _handleResetDefault() {
     Alert.alert(
       'Reset Defaults',
@@ -152,7 +168,7 @@ export default class SettingsScreen extends React.Component {
         data: [
           {
             value:
-              "Indicates the rate at which investment grows per year, default values are [2, 4 8, 10] %",
+              "Indicates the rate at which investment grows per year, default values are [2, 4, 8, 10] %",
               constant: this.state.annualRates
           }
         ],
@@ -172,7 +188,7 @@ export default class SettingsScreen extends React.Component {
         />
         <View style={{display:"flex", paddingBottom: "10%"}}>
           <View style={{flexDirection: "row", alignSelf: "center"}}>
-            <Button style={[styles.disabledButton, styles.button]} onPress={() => {}}>
+            <Button style={[styles.activeButton, styles.button]} onPress={() => this._handleEdit()}>
               <Text style={{margin:"5%", color: "white"}}>EDIT</Text>
             </Button>
             <Button style={styles.button} danger onPress={() => this._handleResetDefault()}>
@@ -288,6 +304,9 @@ const styles = StyleSheet.create({
     marginRight: 15,
     paddingTop: 2
   },
+  titleTextContainer: {
+    paddingRight: "20%"
+  },  
   sectionHeaderContainer: {
     backgroundColor: "#fbfbfb",
     paddingVertical: 8,
@@ -296,6 +315,7 @@ const styles = StyleSheet.create({
     borderColor: "#ededed"
   },
   sectionHeaderText: {
+    textAlign:"center",
     fontSize: 14
   },
   sectionContentContainer: {
