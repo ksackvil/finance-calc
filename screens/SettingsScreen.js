@@ -1,5 +1,6 @@
 import React from "react";
-import { SectionList, Image, StyleSheet, Text, View } from "react-native";
+import { SectionList, Image, StyleSheet, Text, View, Alert } from "react-native";
+import { Button } from "native-base";
 import Colors from "../constants/Colors";
 import { AsyncStorage } from "react-native";
 import { Constants } from "expo";
@@ -18,21 +19,110 @@ export default class SettingsScreen extends React.Component {
 
   constructor() {
     super();
-
+    
     this.state = {
-      retirementAge: 65,
-      inflationRate: "3.5 %",
-      annualRates: "[2, 4, 8, 10] %"
+      retirementAge: 0,
+      inflationRate: "",
+      annualRates: "",
+      loading:true
     };
+
+    this._getCalcConstants();
+  }
+
+  _getCalcConstants = async () => {
+    try{
+    const returnObj = await AsyncStorage.multiGet([
+      "@constant:retirementAge",
+      "@constant:inflation",
+      "@constant:annualRates"
+    ]);
+
+    if (returnObj !== []) {
+      let tempObj = {
+        retirementAge: 65,
+        inflationRate: "3.5 %",
+        annualRates: "[2, 4, 8, 10] %",
+        loading: false
+      };
+
+      // Check retirementAge
+      if (returnObj[0][1] !== null) {
+        tempObj["retirementAge"] = returnObj[0][1];
+      } 
+
+      // Check Inflation
+      if (returnObj[1][1] !== null) {
+        tempObj["inflation"] = `${returnObj[1][1] * 100} %`;
+      } 
+
+      // Check annual rates
+      if (returnObj[2][1] !== null) {
+       
+          // Key is an formated string with ¬ separator, separate on this will
+          // yeild an array, change each element to a number from string.
+          let listOfRates = returnObj[2][1].split("~");
+          for (let index in listOfRates) {
+              listOfRates[index] = Number(listOfRates[index]);
+          }
+      }
+
+      this.setState(tempObj);
+    } 
+    else {
+      this.setState({
+        retirementAge: 65,
+        inflationRate: "3.5 %",
+        annualRates: "[2, 4, 8, 10] %",
+        loading: false
+      });
+    }
+  }
+   catch (error) {
+      console.log('catched at SettingsScreen.js line 83. ERROR: ' + error);
+    }
   }
 
   _setCalcConstants = async () => {
     try {
-      await AsyncStorage.setItem("@constant:retirementAge", "65");
+      await AsyncStorage.setItem("@constant:retirementAge", "60");
       await AsyncStorage.setItem("@constant:annualRates", "0.04~0.06~0.08~0.1");
     } catch (error) {
       console.log(error);
     }
+  };
+
+  _resetDefaults = async () => {
+    try {
+      await AsyncStorage.setItem("@constant:retirementAge", "65");
+      await AsyncStorage.setItem("@constant:annualRates", "0.04~0.06~0.08~0.1");
+      await AsyncStorage.setItem("@constant:inflationRate", "3.5");
+      this.setState({
+        retirementAge: 65,
+        inflationRate: "3.5 %",
+        annualRates: "[2, 4, 8, 10] %",
+      })
+
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  _handleResetDefault() {
+    Alert.alert(
+      'Reset Defaults',
+      'This action will reset all constants back to there default value, any changes made will be reset.',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => this._resetDefaults()},
+      ],
+      {cancelable: false},
+    );
   };
 
   render() {
@@ -62,29 +152,41 @@ export default class SettingsScreen extends React.Component {
         data: [
           {
             value:
-              "Is the interest rate for a whole year, rather than just a monthly fee/rate, as applied on a loan, mortgage loan, credit card, etc. It is a finance charge expressed as an annual rate",
+              "Indicates the rate at which investment grows per year, default values are [2, 4 8, 10] %",
               constant: this.state.annualRates
           }
         ],
         title: "Annual Rates"
       }
     ];
+
     return (
-      <SectionList
-        style={styles.container}
-        renderItem={this._renderItem}
-        renderSectionHeader={this._renderSectionHeader}
-        stickySectionHeadersEnabled={true}
-        keyExtractor={(item, index) => index}
-        ListHeaderComponent={ListHeader}
-        sections={sections}
-      />
+      <View style={styles.container}>
+        <SectionList
+          renderItem={this._renderItem}
+          renderSectionHeader={this._renderSectionHeader}
+          stickySectionHeadersEnabled={true}
+          keyExtractor={(item, index) => index}
+          ListHeaderComponent={ListHeader}
+          sections={sections}
+        />
+        <View style={{display:"flex", paddingBottom: "10%"}}>
+          <View style={{flexDirection: "row", alignSelf: "center"}}>
+            <Button style={[styles.disabledButton, styles.button]} onPress={() => {}}>
+              <Text style={{margin:"5%", color: "white"}}>EDIT</Text>
+            </Button>
+            <Button style={styles.button} danger onPress={() => this._handleResetDefault()}>
+              <Text style={{margin:"5%", color: "white"}}>RESET DEFAULTS</Text>
+            </Button>
+          </View>
+        </View>
+      </View>
     );
   }
 
   _renderSectionHeader = ({ section }) => {
     return (
-    <SectionHeader title={section.title} />
+    <SectionHeader title={section.title} constant={section.data[0].constant} />
     );
   };
 
@@ -98,17 +200,6 @@ export default class SettingsScreen extends React.Component {
     } else {
       return (
         <SectionContent>
-          <Text
-            style={{
-              fontWeight: "bold",
-              marginTop: "1.5%",
-              marginBottom: "1.5%",
-              fontSize: 20,
-              alignSelf: "center"
-            }}
-          >
-            {item.constant}
-          </Text>
           <Text style={styles.sectionContentText}>{item.value}</Text>
         </SectionContent>
       );
@@ -134,18 +225,16 @@ const ListHeader = () => {
           By KVN Software Solutions
         </Text>
 
-        <Text style={styles.descriptionText}>Feel free to change the value of constants below</Text>
-        <Text>Edit</Text>
-      </View>    
-
+        <Text style={styles.descriptionText}>Below are the constants used for the calculator. Click on a constant to edit its value, changes made will persist until edited again.</Text>
+      </View>   
     </View>
   );
 };
 
-const SectionHeader = ({ title }) => {
+const SectionHeader = ({ title, constant }) => {
   return (
     <View style={styles.sectionHeaderContainer}>
-      <Text style={styles.sectionHeaderText}>{title}</Text>
+      <Text style={styles.sectionHeaderText}>{title}: <Text style={{fontWeight:"bold"}}>{constant}</Text></Text>
     </View>
   );
 };
@@ -215,6 +304,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15
   },
   sectionContentText: {
+    marginBottom: "5%",
     color: "#808080",
     fontSize: 14
   },
@@ -246,5 +336,15 @@ const styles = StyleSheet.create({
   },
   colorTextContainer: {
     flex: 1
-  }
+  },
+  button: {
+    margin: 10,
+    justifyContent: "center"
+  },
+  disabledButton: {
+    backgroundColor: Colors.fgLight
+  },
+  activeButton: {
+    backgroundColor: Colors.primThree
+  },
 });
