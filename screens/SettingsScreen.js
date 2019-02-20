@@ -1,3 +1,11 @@
+/*
+ *  SettingsScreen.js
+ *
+ *  Description:
+ *      
+ *
+ */
+
 import React from "react";
 import {
     SectionList,
@@ -46,12 +54,13 @@ export default class SettingsScreen extends React.Component {
                 "@constant:inflation",
                 "@constant:annualRates"
             ]);
-
+            
+            // console.log(returnObj);
             if (returnObj !== []) {
                 let tempObj = {
                     retirementAge: 65,
                     inflationRate: "3.5 %",
-                    annualRates: "[2, 4, 8, 10] %",
+                    annualRates: "[4, 6, 8, 10] %",
                     loading: false
                 };
 
@@ -62,17 +71,27 @@ export default class SettingsScreen extends React.Component {
 
                 // Check Inflation
                 if (returnObj[1][1] !== null) {
-                    tempObj["inflation"] = `${returnObj[1][1] * 100} %`;
+                    tempObj["inflationRate"] = `${(Number(returnObj[1][1]) * 100).toFixed(1)} %`;
                 }
 
                 // Check annual rates
                 if (returnObj[2][1] !== null) {
-                    // Key is an formated string with ¬ separator, separate on this will
+
+                    // Key is an formated string with ~ separator, separate on this will
                     // yeild an array, change each element to a number from string.
                     let listOfRates = returnObj[2][1].split("~");
+                    let tempRates = ""
                     for (let index in listOfRates) {
-                        listOfRates[index] = Number(listOfRates[index]);
+                        if(index == 0) {
+                            tempRates += `[${(listOfRates[index] * 100)}`;
+                        }
+                        else {
+                            tempRates += `, ${(listOfRates[index] * 100)}`;
+                        }
                     }
+
+                    tempRates += "] %";
+                    tempObj["annualRates"] = tempRates;
                 }
 
                 this.setState(tempObj);
@@ -80,7 +99,7 @@ export default class SettingsScreen extends React.Component {
                 this.setState({
                     retirementAge: 65,
                     inflationRate: "3.5 %",
-                    annualRates: "[2, 4, 8, 10] %",
+                    annualRates: "[4, 6, 8, 10] %",
                     loading: false
                 });
             }
@@ -91,13 +110,42 @@ export default class SettingsScreen extends React.Component {
         }
     };
 
-    _setCalcConstants = async () => {
+    _setCalcConstants = async (retirement, inflation, annualRates) => {
         try {
-            await AsyncStorage.setItem("@constant:retirementAge", "60");
+            let stateAnnualRate = "";
+            let cacheAnnualRate = ""
+            let cacheInflation = inflation / 100;
+            let stateInflation = `${inflation} %`;
+            
+            for(let it in annualRates) {
+                if(Number(it) === 0) {
+                    cacheAnnualRate += `${(annualRates[it]/100)}`;
+                    stateAnnualRate += `[${annualRates[it]}`;
+                }
+                else {
+                    cacheAnnualRate += `~${(annualRates[it]/100)}`;
+                    stateAnnualRate += `, ${annualRates[it]}`;
+                }
+            };
+
+            stateAnnualRate += `] %`;
+
+            console.log(cacheAnnualRate, retirement, cacheInflation);
+            console.log(stateAnnualRate, retirement, stateInflation);
+
+            await AsyncStorage.setItem("@constant:retirementAge", `${retirement}`);
             await AsyncStorage.setItem(
                 "@constant:annualRates",
-                "0.04~0.06~0.08~0.1"
+                `${cacheAnnualRate}`
             );
+            await AsyncStorage.setItem("@constant:inflation", `${cacheInflation}`)
+                
+            this.setState({
+                modalVisible: false,
+                retirementAge: retirement,
+                inflationRate: stateInflation,
+                annualRates: stateAnnualRate
+            });
         } catch (error) {
             console.log(error);
         }
@@ -110,11 +158,11 @@ export default class SettingsScreen extends React.Component {
                 "@constant:annualRates",
                 "0.04~0.06~0.08~0.1"
             );
-            await AsyncStorage.setItem("@constant:inflationRate", "3.5");
+            await AsyncStorage.setItem("@constant:inflation", "0.035");
             this.setState({
                 retirementAge: 65,
                 inflationRate: "3.5 %",
-                annualRates: "[2, 4, 8, 10] %"
+                annualRates: "[4, 6, 8, 10] %"
             });
         } catch (error) {
             console.log(error);
@@ -192,6 +240,7 @@ export default class SettingsScreen extends React.Component {
                     retirementAge={this.state.retirementAge}
                     inflationRate={this.state.inflationRate}
                     annualRates={this.state.annualRates}
+                    _handleSave={this._setCalcConstants.bind(this)}
                 />
 
                 <SectionList
@@ -273,12 +322,12 @@ const ListHeader = () => {
                 <Text style={styles.slugText} numberOfLines={1}>
                     By KVN Software Solutions
                 </Text>
-
+{/* 
                 <Text style={styles.descriptionText}>
                     Below are the constants used for the calculator. Click on a
                     constant to edit its value, changes made will persist until
                     edited again.
-                </Text>
+                </Text> */}
             </View>
         </View>
     );

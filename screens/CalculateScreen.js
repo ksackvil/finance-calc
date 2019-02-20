@@ -17,8 +17,8 @@ import {
     Container,
     Text,
     Button,
+    Icon
 } from "native-base";
-import { Ionicons } from '@expo/vector-icons';
 import { ResultsModal } from "../components/ResultsModal";
 import Colors from "../constants/Colors";
 
@@ -212,7 +212,7 @@ export default class CalcForm extends Component {
                                         keyboardType="numeric"
                                     />
                                     {this.state.invalidAge ? (
-                                        <Ionicons size={10} name="md-close-circle-outline" />
+                                        <Icon name="close-circle" />
                                     ) : null}
                                 </Item>
                                 <Item
@@ -233,9 +233,9 @@ export default class CalcForm extends Component {
                                         value={this.state.income}
                                         keyboardType="numeric"
                                     />
-                                    {/* {this.state.invalidIncome ? (
+                                    {this.state.invalidIncome ? (
                                         <Icon name="close-circle" />
-                                    ) : null} */}
+                                    ) : null}
                                 </Item>
                                 {/* <Item fixedLabel last>
                   <Label>Savings Plan</Label>

@@ -33,10 +33,17 @@ export class EditModal extends React.Component {
 
         switch (key) {
             case "retirementAge":
+
+                if(isNaN(value)) {
+                    tempErr = true;
+                }
+
+                this.setState({retirementAge: value, invalidRetirementAge: tempErr});
+
                 break;
 
             case "inflation":
-                let tempErr = this.state.invalidInflation;
+                var tempErr = this.state.invalidInflation;
 
                 if (isNaN(value)) {
                     tempErr = true;
@@ -92,7 +99,7 @@ export class EditModal extends React.Component {
                     </Text>
                     <Text
                         style={{
-                            marginTop: "10%",
+                            marginTop: "5%",
                             marginLeft: "5%",
                             marginRight: "5%"
                         }}
@@ -101,7 +108,7 @@ export class EditModal extends React.Component {
                         on a constant to edit its value, changes made will
                         persist until edited again.
                     </Text>
-                    <View style={{ marginTop: "10%", marginRight: 10 }}>
+                    <View style={{ marginTop: "5%", marginRight: 10 }}>
                         <Form>
                             <Label
                                 style={{
@@ -110,10 +117,10 @@ export class EditModal extends React.Component {
                                     alignSelf: "center"
                                 }}
                             >
-                                Retirement Age
+                                Retirement Age (years)
                             </Label>
                             <Item
-                                error={this.state.invalidInflation}
+                                error={this.state.invalidRetirementAge}
                                 fixedLabel
                             >
                                 <Input
@@ -130,9 +137,9 @@ export class EditModal extends React.Component {
                                     value={this.state.retirementAge}
                                     keyboardType="numeric"
                                 />
-                                {/* {this.state.invalidAge ? (
+                                {this.state.invalidRetirementAge ? (
                                     <Icon name="close-circle" />
-                                ) : null} */}
+                                ) : null}
                             </Item>
                             <Label
                                 style={{
@@ -142,7 +149,7 @@ export class EditModal extends React.Component {
                                     paddingTop: "5%"
                                 }}
                             >
-                                Inflation
+                                Inflation (%)
                             </Label>
                             <Item
                                 error={this.state.invalidInflation}
@@ -173,7 +180,7 @@ export class EditModal extends React.Component {
                                     paddingTop: "5%"
                                 }}
                             >
-                                Annual Rates
+                                Annual Rates (%)
                             </Label>
                             <Item
                                 fixedLabel
@@ -239,7 +246,7 @@ export class EditModal extends React.Component {
                                     value={this.state.annualRates[3]}
                                     keyboardType="numeric"
                                 />
-                                <Text>] %</Text>
+                                <Text>]</Text>
 
                                 {/* {this.state.invalidIncome ? (
                                     <Icon name="close-circle" />
@@ -265,14 +272,29 @@ export class EditModal extends React.Component {
                                     CANCEL
                                 </Text>
                             </Button>
-                            <Button
-                                style={[styles.button, styles.activeButton]}
-                                onPress={() => this.props._handleEdit()}
-                            >
-                                <Text style={{ margin: "5%", color: "white" }}>
-                                    SAVE
-                                </Text>
-                            </Button>
+                            {
+                                (this.state.invalidAnnualRates || this.state.invalidInflation || this.state.invalidRetirementAge) ?
+                                (
+                                    <Button
+                                        disabled
+                                        style={[styles.button, styles.disabledButton]}
+                                    >
+                                        <Text style={{ margin: "5%", color: "white" }}>
+                                            SAVE
+                                        </Text>
+                                    </Button>
+                                ):
+                                (
+                                    <Button
+                                        style={[styles.button, styles.activeButton]}
+                                        onPress={() => this.props._handleSave(this.state.retirementAge, this.state.inflation, this.state.annualRates)}
+                                    >
+                                        <Text style={{ margin: "5%", color: "white" }}>
+                                            SAVE
+                                        </Text>
+                                    </Button>
+                                )
+                            }
                         </View>
                     </View>
                 </View>

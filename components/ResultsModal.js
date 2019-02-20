@@ -41,6 +41,7 @@ export class ResultsModal extends React.Component {
 
       // test if local cache is completely clear, if it is go straight to 
       // default values.
+      console.log(returnObj);
       if (returnObj !== []) {
         let tempObj = {};
 
@@ -75,9 +76,15 @@ export class ResultsModal extends React.Component {
           tempObj["annualRates"] = listOfRates;
         }
 
+        this.setState(tempObj)
         return tempObj;
       } 
       else {
+        this.setState({
+            retirementAge: 65,
+            inflation: 0.035,
+            annualRates: [0.04, 0.06, 0.08, 0.1]
+        })
         return {
           retirementAge: 65,
           inflation: 0.035,
@@ -110,6 +117,8 @@ export class ResultsModal extends React.Component {
     const inflation = constObj.inflation;
     var annualRates = constObj.annualRates;
 
+    console.log(retireAge,typeof inflation, annualRates);
+
     // CALCULATED CONSTANTS
     const yrsTillRet = retireAge - age;
     const moTillRet = yrsTillRet * 12;
@@ -135,7 +144,6 @@ export class ResultsModal extends React.Component {
 
   render() {
     const contentInset = { top: 20, bottom: 20 };
-    const annualRates = [0.04, 0.06, 0.08, 0.1];
 
     return (
       <View style={styles.container} collapsable={false}>
@@ -223,9 +231,9 @@ export class ResultsModal extends React.Component {
                     {this.state.monthlySavings.map((save, index) => (
                       <View style={styles.tableColumn} key={index}>
                         <View style={styles.tableItem}>
-                          <Text style={styles.tableRate}>{`${annualRates[
+                          <Text style={styles.tableRate}>{`${this.state.annualRates[
                             index
-                          ] * 10}%`}</Text>
+                          ] * 100}%`}</Text>
                         </View>
                         <View style={styles.tableItem}>
                           <Text style={styles.tableValue}>
