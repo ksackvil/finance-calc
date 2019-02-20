@@ -1,3 +1,11 @@
+/*
+ *  CalculateScreen.js
+ *
+ *  Description:
+ * 
+ *  Sections:
+ */
+
 import React, { Component } from "react";
 import {
     StyleSheet,

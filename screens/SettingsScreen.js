@@ -2,8 +2,16 @@
  *  SettingsScreen.js
  *
  *  Description:
- *      
- *
+ *      This is the second tab of the app, shows developer info as well as calculator constants.
+ *      Constants can be edited from this tab.
+ * 
+ *  Sections:
+ *      1. TAB NAVIGATION
+ *      2. CONSTRUCTOR
+ *      3. FUNCTIONS
+ *      4. RENDER
+ *      5. COMPONENT CONSTANTS
+ *      6. STYLE
  */
 
 import React from "react";
@@ -22,6 +30,9 @@ import { Constants } from "expo";
 import {EditModal} from "../components/EditModal";
 
 export default class SettingsScreen extends React.Component {
+
+    // ========== TAB NAVIGATION ========== //
+
     static navigationOptions = {
         title: "Settings",
         headerTitleStyle: {
@@ -33,30 +44,43 @@ export default class SettingsScreen extends React.Component {
         }
     };
 
+    // ========== CONSTRUCTOR ========== //
+
     constructor() {
         super();
 
         this.state = {
-            retirementAge: 0,
-            inflationRate: "",
+            retirementAge: 0,  
+            inflationRate: "",  
             annualRates: "",
             loading: true,
             modalVisible: false
         };
 
+        // Grab calculator constants from local store
         this._getCalcConstants();
     }
 
+    // ========== FUNCTIONS ==========//
+
+    // Des: Gets constants from the local store.
+    // Pre: state.loading is true
+    // Post: The state members, retirementAge, inflationRate, and annualRates, will be updated
+    //       to reflect the local store, state.loading will be false if successful, else error 
+    //       message will be output.
     _getCalcConstants = async () => {
         try {
+            // grab from local store
             const returnObj = await AsyncStorage.multiGet([
                 "@constant:retirementAge",
                 "@constant:inflation",
                 "@constant:annualRates"
             ]);
             
-            // console.log(returnObj);
+            // if the store is not empty...
             if (returnObj !== []) {
+
+                // default object
                 let tempObj = {
                     retirementAge: 65,
                     inflationRate: "3.5 %",
@@ -94,6 +118,7 @@ export default class SettingsScreen extends React.Component {
                     tempObj["annualRates"] = tempRates;
                 }
 
+                // update state
                 this.setState(tempObj);
             } else {
                 this.setState({
@@ -104,19 +129,29 @@ export default class SettingsScreen extends React.Component {
                 });
             }
         } catch (error) {
+            // output error message
             console.log(
-                "catched at SettingsScreen.js line 83. ERROR: " + error
+                "catched at SettingsScreen.js, _getCalcConstants()" + error
             );
         }
     };
 
+    // Des: Sets the constants in local store
+    // Pre: retirement and inflation must be a number, annualRates must be an 
+    //      array with 4 values.
+    // Post: Local storage will be updated with new values of retirementAge (years),
+    //       annualRates (decimal), and inflation (decimal). State will be updated with 
+    //       retirementAge (years), annualRates (percentage), and inflationRate (percentage).
     _setCalcConstants = async (retirement, inflation, annualRates) => {
         try {
-            let stateAnnualRate = "";
-            let cacheAnnualRate = ""
-            let cacheInflation = inflation / 100;
-            let stateInflation = `${inflation} %`;
+            let stateAnnualRate = ""; // rates to be displayed in app
+            let cacheAnnualRate = "" // rates used for calculation & stored value
+            let cacheInflation = inflation / 100; // inflation stored  
+            let stateInflation = `${inflation} %`; // inflation to be displayed in app
             
+            // Format the array annualRates, for the cache, make the pattern #1~#2~#3~#4,
+            // for the state make the pattern [#1, #2, #3, #4] %. For cache convert to decimal 
+            // representation from percentage, for state keep as percentage.
             for(let it in annualRates) {
                 if(Number(it) === 0) {
                     cacheAnnualRate += `${(annualRates[it]/100)}`;
@@ -128,11 +163,10 @@ export default class SettingsScreen extends React.Component {
                 }
             };
 
+            // close bracket
             stateAnnualRate += `] %`;
 
-            console.log(cacheAnnualRate, retirement, cacheInflation);
-            console.log(stateAnnualRate, retirement, stateInflation);
-
+            // Write to the local store the cache values
             await AsyncStorage.setItem("@constant:retirementAge", `${retirement}`);
             await AsyncStorage.setItem(
                 "@constant:annualRates",
@@ -140,6 +174,7 @@ export default class SettingsScreen extends React.Component {
             );
             await AsyncStorage.setItem("@constant:inflation", `${cacheInflation}`)
                 
+            // write to the state the state values
             this.setState({
                 modalVisible: false,
                 retirementAge: retirement,
@@ -147,10 +182,14 @@ export default class SettingsScreen extends React.Component {
                 annualRates: stateAnnualRate
             });
         } catch (error) {
+            // output error message
             console.log(error);
         }
     };
 
+    // Des: Resets the constants to default values by writing them to local store
+    // Post: retirementAge, annualRates, and inflation will be set to default vales in string 
+    //       decimal (not percentage) format.
     _resetDefaults = async () => {
         try {
             await AsyncStorage.setItem("@constant:retirementAge", "65");
@@ -169,12 +208,16 @@ export default class SettingsScreen extends React.Component {
         }
     };
 
+    // Des: sets state.modalVisible to newState
+    // Pre: newState must be of type bool
+    // Post state.modalVisible set to newState
     setModalVisible(newState) {
         this.setState({ modalVisible: newState });
     }
 
-    _handleEdit() {}
-
+    // Des: Handler for edit button. Alert box appears waring user about resetting the defaults.
+    // Post: If ok is pressed this._resetDefaults is called (see above). Else
+    //       modal is closed and nothing happens.
     _handleResetDefault() {
         Alert.alert(
             "Reset Defaults",
@@ -190,6 +233,39 @@ export default class SettingsScreen extends React.Component {
             { cancelable: false }
         );
     }
+
+    // Des: Renders each sections header
+    // Pre: Section must be defined with title, and data
+    // Post: Section is returned
+    _renderSectionHeader = ({ section }) => {
+        return (
+            <SectionHeader
+                title={section.title}
+                constant={section.data[0].constant}
+            />
+        );
+    };
+
+    // Des: Renders each sections item
+    // Pre: item must be defined with value, and and type
+    // Post: Section item is returned
+    _renderItem = ({ item }) => {
+        if (item.type === "color") {
+            return (
+                <SectionContent>
+                    {item.value && <Color value={item.value} />}
+                </SectionContent>
+            );
+        } else {
+            return (
+                <SectionContent>
+                    <Text style={styles.sectionContentText}>{item.value}</Text>
+                </SectionContent>
+            );
+        }
+    };
+
+    // ========== RENDER ========== //
 
     render() {
         const { manifest } = Constants;
@@ -278,32 +354,9 @@ export default class SettingsScreen extends React.Component {
             </View>
         );
     }
+};
 
-    _renderSectionHeader = ({ section }) => {
-        return (
-            <SectionHeader
-                title={section.title}
-                constant={section.data[0].constant}
-            />
-        );
-    };
-
-    _renderItem = ({ item }) => {
-        if (item.type === "color") {
-            return (
-                <SectionContent>
-                    {item.value && <Color value={item.value} />}
-                </SectionContent>
-            );
-        } else {
-            return (
-                <SectionContent>
-                    <Text style={styles.sectionContentText}>{item.value}</Text>
-                </SectionContent>
-            );
-        }
-    };
-}
+// ========== COMPONENT CONSTANTS ==========//
 
 const ListHeader = () => {
     const { manifest } = Constants;
@@ -378,6 +431,8 @@ const Color = ({ value }) => {
         );
     }
 };
+
+// ========== STYLE ========== //
 
 const styles = StyleSheet.create({
     container: {
