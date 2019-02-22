@@ -2,21 +2,23 @@
  *  CalculateScreen.js
  *
  *  Description:
- * 
+ *      This is the first and default tab for this app. Here a user can input age and salary to
+ *      calculate their investment portfolio. Age and salary must be properly formated in order to
+ *      kick of calculation in ResultsModal.js, if not then error icon will appear. This validation is
+ *      processed through the state variables prefixed by invalid, if any of these is true then
+ *      button will be disabled, no calculation will go through. This also serves as the landing page
+ *      for our app.
+ *
  *  Sections:
+ *      1. TAB NAVIGATION
+ *      2. CONSTRUCTOR
+ *      3. FUNCTIONS
+ *      4. RENDER
+ *      5. STYLE
  */
 
 import React, { Component } from "react";
-import {
-    StyleSheet,
-    View,
-    Modal,
-    Alert,
-    Animated,
-    Dimensions,
-    Share,
-    Keyboard
-} from "react-native";
+import { StyleSheet, View, Modal, Alert, Share, Keyboard } from "react-native";
 import {
     Form,
     Item,
@@ -29,13 +31,12 @@ import {
 } from "native-base";
 import { ResultsModal } from "../components/ResultsModal";
 import Colors from "../constants/Colors";
-
 import { takeSnapshotAsync } from "expo";
 
-var isHidden = true;
-const { height } = Dimensions.get("window");
-
 export default class CalcForm extends Component {
+
+    // ========== TAB NAVIGATION ========== //
+
     static navigationOptions = {
         title: "Monthly Savings",
         headerTitleStyle: {
@@ -47,6 +48,8 @@ export default class CalcForm extends Component {
         }
     };
 
+    // ========== CONSTRUCTOR ========== //
+
     constructor(props) {
         super(props);
 
@@ -57,16 +60,25 @@ export default class CalcForm extends Component {
             invalidAge: false,
             income: null,
             invalidIncome: false,
-            invalidForm: false,
-            bounceValue: new Animated.Value(height - 100)
+            invalidForm: false
         };
     }
 
+    // ========== FUNCTIONS ========== //
+
+    // Des: Sets the state of modalVisible (boolean)
+    // Pre: Param visible must be of type bool
+    // Post: modalVisible changed to bool visible
     setModalVisible(visible) {
         this.setState({ modalVisible: visible });
     }
 
-    handleValueChange(key, value) {
+    // Des: Form onChange handler, validates input and updates state with
+    //      new input value
+    // Pre: key must be string, and must be age or income. value must be a number
+    // Post: New value will be updated for key, if invalid, that keys error flag will be
+    //       set to true else false.
+    _valueChange(key, value) {
         if (isNaN(value) || value == 0) {
             if (key === "age") {
                 this.setState({ age: value, invalidAge: true });
@@ -96,34 +108,9 @@ export default class CalcForm extends Component {
         }
     }
 
-    _toggleSubview(visible) {
-        Keyboard.dismiss();
-
-        this.setState({
-            modalVisible: visible
-        });
-
-        // var toValue = (height - height/7);
-
-        // if(isHidden) {
-        //   toValue = height/20;
-        // }
-
-        // //This will animate the transalteY of the subview between 0 & 100 depending on its current state
-        // //100 comes from the style below, which is the height of the subview.
-        // Animated.spring(
-        //   this.state.bounceValue,
-        //   {
-        //     toValue: toValue,
-        //     velocity: 3,
-        //     tension: 2,
-        //     friction: 8,
-        //   }
-        // ).start();
-
-        // isHidden = !isHidden;
-    }
-
+    // Des: handles sharing (currently not functional).
+    // Pre: TBD
+    // Post: TBD
     _share = async () => {
         try {
             let result = await takeSnapshotAsync(this._container, {
@@ -152,56 +139,35 @@ export default class CalcForm extends Component {
         }
     };
 
+    // ========== RENDER ========== //
+
     render() {
         return (
-            <Container collapsable={false}>
+            <Container collapsible={false}>
                 {this.state.modalVisible ? (
                     <Modal
                         visible
                         animationType="slide"
                         onRequestClose={msg => null}
-                        collapsable={false}
-                        style={{ height: height }}
+                        collapsible={false}
                     >
-                        {/* <Animated.View ref="viewShot"
-                style={[
-                  styles.subView,
-                  {transform: [{translateY: this.state.bounceValue}]}
-                ]}
-                ref={view => {
-                  this._container = view;
-                }}
-              >
-                 */}
                         <View
                             style={styles.subView}
-                            collapsable={false}
+                            collapsible={false}
                             ref={view => {
                                 this._container = view;
                             }}
-                            // ref="viewShot"
                         >
                             <ResultsModal
-                                age={this.state.age}
-                                income={this.state.income}
+                                age={Number(this.state.age)}
+                                income={Number(this.state.income)}
                                 visible={true}
                                 setModalVisible={this.setModalVisible.bind(
                                     this
                                 )}
-                                _toggleSubview={this._toggleSubview.bind(this)}
                                 _share={this._share.bind(this)}
                             />
                         </View>
-                        {/* <View style={styles.buttonContainer}>
-                                        <Button style={styles.button} onPress={() => this._toggleSubview(false)}>
-                                        <Text>Done</Text>
-                                        </Button>
-                                        <Button style={styles.button} onPress={() => this._share()}>
-                                        <Text>Share</Text>
-                                        </Button>
-                                </View> */}
-
-                        {/* </Animated.View> */}
                     </Modal>
                 ) : (
                     <View>
@@ -211,7 +177,7 @@ export default class CalcForm extends Component {
                                     <Label>Age</Label>
                                     <Input
                                         onChangeText={val =>
-                                            this.handleValueChange("age", val)
+                                            this._valueChange("age", val)
                                         }
                                         placeholder="Enter current age"
                                         returnKeyLabel="Done"
@@ -230,10 +196,7 @@ export default class CalcForm extends Component {
                                     <Label>Income</Label>
                                     <Input
                                         onChangeText={val =>
-                                            this.handleValueChange(
-                                                "income",
-                                                val
-                                            )
+                                            this._valueChange("income", val)
                                         }
                                         placeholder="Enter annual income"
                                         returnKeyLabel="Done"
@@ -245,21 +208,6 @@ export default class CalcForm extends Component {
                                         <Icon name="close-circle" />
                                     ) : null}
                                 </Item>
-                                {/* <Item fixedLabel last>
-                  <Label>Savings Plan</Label>
-                    <Picker
-                        mode="dropdown"
-                        iosIcon={<Icon name="ios-arrow-down-outline" />}
-                        placeholder="Select Acceleration"
-                        placeholderIconColor="#007aff"
-                        style={{ width: undefined }}
-                        selectedValue={this.state.selected}
-                        onValueChange={this.onValueChange.bind(this)}
-                      >
-                        <Picker.Item label="RRSP" value="key0" />
-                        <Picker.Item label="- 3.8 (Mars)" value="key1" />
-                      </Picker>
-                  </Item> */}
                             </Form>
                         </View>
                         <View style={{ margin: 20, alignSelf: "center" }}>
@@ -272,14 +220,14 @@ export default class CalcForm extends Component {
                                 <Button
                                     style={styles.disabledButton}
                                     disabled
-                                    onPress={() => this._toggleSubview(true)}
+                                    onPress={() => this.setModalVisible(true)}
                                 >
                                     <Text>Calculate</Text>
                                 </Button>
                             ) : (
                                 <Button
                                     style={styles.activeButton}
-                                    onPress={() => this._toggleSubview(true)}
+                                    onPress={() => this.setModalVisible(true)}
                                 >
                                     <Text>Calculate</Text>
                                 </Button>
@@ -287,33 +235,12 @@ export default class CalcForm extends Component {
                         </View>
                     </View>
                 )}
-
-                {/* <View style={{margin: 12, alignSelf: "center"}}>
-          <Text style={{fontWeight:"bold", fontSize: 18, marginTop:10}}>
-            Calculating Force (Newtons)
-          </Text>
-          <Text style={{textAlign:"center", fontSize:30, margin: 10}}>
-            F = m x a
-          </Text>
-          <Text style= {{marginLeft: 20, marginRight:20, marginTop: 5, marginBottom: 5}}>
-            {`\u2022 Force (F) is mesured in newtons (N), it's sign represents force direction`}
-          </Text>
-          <Text style= {{marginLeft: 20, marginRight:20, marginTop: 5, marginBottom: 5}}>
-            {`\u2022 Mass (m) is mesured in kilograms (Kg)`}
-          </Text>
-          <Text style= {{marginLeft: 20, marginRight:20, marginTop: 5, marginBottom: 5}}>
-            {`\u2022 Acceleration due to gravity (a) is mesured in meters per second squared (m/s^2)`}
-          </Text>
-        </View>
-        <View style={{margin: 10, }}>
-          <Text>
-          This equation is one of the most useful in classical physics. It is a concise statement of Isaac Newton's Second Law of Motion, holding both the proportions and vectors of the Second Law.
-          </Text>
-        </View> */}
             </Container>
         );
     }
 }
+
+// ========== STYLES ========== //
 
 const styles = StyleSheet.create({
     activeButton: {
@@ -324,7 +251,6 @@ const styles = StyleSheet.create({
     },
     subView: {
         flex: 1,
-        // height:'100%',
         alignItems: "flex-start"
     },
     button: {

@@ -1,3 +1,19 @@
+/*
+ *  EditModal.js
+ *
+ *  Description:
+ *      With this class a users can change the constants which are used in the calculations. This
+ *      class handles the interaction between user and local store, a user can change retirementAge,
+ *      inflation, and  annualRates from here.
+ *
+ *  Sections:
+ *      1. CONSTRUCTOR
+ *      2. FUNCTIONS
+ *      3. RENDER
+ *      4. PROP TYPES
+ *      5. STYLE
+ */
+
 import React from "react";
 import { StyleSheet, Text, View, Modal } from "react-native";
 import { Form, Item, Input, Label, Button, Icon } from "native-base";
@@ -7,6 +23,7 @@ export class EditModal extends React.Component {
     constructor(props) {
         super(props);
 
+        // Formating state
         let splitAnnualRates = this.props.annualRates
             .split("[")[1]
             .split("]")[0]
@@ -19,7 +36,7 @@ export class EditModal extends React.Component {
         }
 
         this.state = {
-            retirementAge: this.props.retirementAge,
+            retirementAge: this.props.retirementAge,  
             inflation: tempInflation,
             annualRates: tempAnnualRates,
             invalidRetirementAge: false,

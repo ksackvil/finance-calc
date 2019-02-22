@@ -102,7 +102,7 @@ export default class SettingsScreen extends React.Component {
                 if (returnObj[2][1] !== null) {
 
                     // Key is an formated string with ~ separator, separate on this will
-                    // yeild an array, change each element to a number from string.
+                    // yield an array, change each element to a number from string.
                     let listOfRates = returnObj[2][1].split("~");
                     let tempRates = ""
                     for (let index in listOfRates) {
@@ -312,7 +312,6 @@ export default class SettingsScreen extends React.Component {
                   <EditModal
                     modalVisible={this.state.modalVisible}
                     setModalVisible={this.setModalVisible.bind(this)}
-                    _handleEdit={this._handleEdit.bind(this)}
                     retirementAge={this.state.retirementAge}
                     inflationRate={this.state.inflationRate}
                     annualRates={this.state.annualRates}
